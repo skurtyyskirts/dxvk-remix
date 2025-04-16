@@ -1336,24 +1336,32 @@ namespace dxvk {
     std::string s;
     bool bFoundValidConfig = false;
     VirtualKeys virtKeys;
+    
     while (std::getline(ss, s, ',')) {
       VirtualKey vk;
-      if(s.find("0x") != std::string::npos) {
-        VkValue vkVal = std::stoul(s, nullptr, 16);
-        vk.val = vkVal;
-      } else {
-        vk = KeyBind::getVk(s);
+      try {
+        if(s.find("0x") != std::string::npos) {
+          VkValue vkVal = std::stoul(s, nullptr, 16);
+          vk.val = vkVal;
+        } else {
+          vk = KeyBind::getVk(s);
+        }
+        
+        if(!KeyBind::isValidVk(vk)) {
+          return false;
+        }
+        
+        virtKeys.push_back(vk);
+        bFoundValidConfig = true;
+      } catch (...) {
+        return false;
       }
-      if(!KeyBind::isValidVk(vk)) {
-        bFoundValidConfig = false;
-        break;
-      }
-      virtKeys.push_back(vk);
-      bFoundValidConfig = true;
     }
+    
     if(bFoundValidConfig) {
       result = std::move(virtKeys);
     }
+    
     return bFoundValidConfig;
   }
   
